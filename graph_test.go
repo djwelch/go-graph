@@ -1,15 +1,15 @@
-package main
+package graph
 
 import (
-    . "go-gherkin"
+    . "github.com/djwelch/go-gherkin"
     . "github.com/tychofreeman/go-matchers"
-    "dw/graph"
+    "testing"
 )
 
-var g graph.Interface
+var g Interface
 
 func GivenAGraph(w *World) {
-    g = graph.New()
+    g = New()
     AssertThat(w, g, Not(Equals(nil)))
 }
 
@@ -41,7 +41,7 @@ func ThenNodeIsNotANeighbor(w *World, n0 string, n1 string) {
     AssertThat(w, ok, IsFalse)
 }
 
-func main() {
+func Test(t *testing.T) {
     Given("a graph", GivenAGraph)
     Given("an edge from node (.*) to (.*)", GivenAnEdge)
     When("delete the edge from node (.*) to (.*)", WhenDeleteAnEdge)
