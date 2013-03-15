@@ -1,10 +1,14 @@
 package graph
 
+import (
+    "fmt"
+)
 // In computer science, a graph is an abstract data type that is meant to 
 // implement the graph and hypergraph concepts from mathematics.
 type Interface interface {
     Adjacent(Node, Node) (bool)
     Add(Node, Node)
+    AddWithEdge(Node, Node, Edge)
     Delete(Node, Node)
     Neighbors(Node) (map[Node]Edge)
 }
@@ -20,6 +24,10 @@ type Node interface {
 // A graph data structure may also associate to each edge some edge value, such 
 // as a symbolic label or a numeric attribute (cost, capacity, length, etc.).
 type Edge interface {
+}
+
+type EdgeDistance interface {
+    Distance() (int)
 }
 
 // ## Operations
@@ -49,9 +57,17 @@ func (g *adjacencyGraph) Neighbors(x Node) (y map[Node]Edge){
 // adds to G the edge from x to y, if it is not there.
 func (g *adjacencyGraph) Add(x Node, y Node) {
     if edgeNodes, ok := g.storage[x]; ok {
-        edgeNodes[y] = y
+        edgeNodes[y] = nil
     } else {
         g.storage[x] = map[Node]Edge{y:nil}
+    }
+}
+
+func (g *adjacencyGraph) AddWithEdge(x Node, y Node, e Edge) {
+    if edgeNodes, ok := g.storage[x]; ok {
+        edgeNodes[y] = e
+    } else {
+        g.storage[x] = map[Node]Edge{y:e}
     }
 }
 
@@ -71,7 +87,6 @@ func (g *adjacencyGraph) Delete(x Node, y Node) {
 // Vertices are stored as records or objects, and every vertex stores a list of
 // adjacent vertices. This data structure allows the storage of additional data
 // on the vertices
-
 type adjacencyGraph struct {
     storage map[Node]map[Node]Edge
 }
@@ -107,9 +122,9 @@ func Dijkstra(g Interface, source Node, target Node) (path []Node) {
         // For the current node, consider all of its unvisited neighbors and 
         // calculate their tentative distances.
         distance := dist[current]
-        for node, _ := range g.Neighbors(current) {
-            // Currently all edges have a distance of one.
-            newdistance := distance + 1
+        for node, edge := range g.Neighbors(current) {
+            // All edges have to implement the EdgeDistance interface
+            newdistance := distance + edge.(EdgeDistance).Distance()
             // If this distance is less than the previously recorded tentative 
             // distance of B, then overwrite that distance.
             if olddistance, ok := dist[node]; 
@@ -132,6 +147,7 @@ func Dijkstra(g Interface, source Node, target Node) (path []Node) {
             }
         }
     }
+    fmt.Println(dist)
     // Get and return the optimal path
     path = []Node {}
     for u := target; u != source; u = previous[u] {

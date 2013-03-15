@@ -10,6 +10,14 @@ import (
 var g Interface
 var gpath []interface{}
 
+type mockEdge struct {
+    distance int
+}
+
+func (e *mockEdge) Distance() int {
+    return e.distance
+}
+
 func GivenAGraph(w *World) {
     g = New()
     AssertThat(w, g, Not(Equals(nil)))
@@ -17,6 +25,10 @@ func GivenAGraph(w *World) {
 
 func GivenAnEdge(w *World, n0 string, n1 string) {
     g.Add(n0, n1)
+}
+
+func GivenAnEdgeDist(w *World, n0 string, n1 string, d int) {
+    g.AddWithEdge(n0, n1, &mockEdge{d})
 }
 
 func ThenNodesAreAdjacent(w *World, n0 string, n1 string) {
@@ -62,7 +74,9 @@ func ThenThePathIs(w *World, p string) {
 
 func Test(t *testing.T) {
     Given("a graph", GivenAGraph)
-    Given("an edge from node (.*) to (.*)", GivenAnEdge)
+    Given("an edge from node (.*) to ([^ ]*)$", GivenAnEdge)
+    Given("an edge from node (.*) to (.*) with distance (.*)", 
+        GivenAnEdgeDist)
     When("delete the edge from node (.*) to (.*)", WhenDeleteAnEdge)
     Then("nodes (.*) and (.*) are adjacent", ThenNodesAreAdjacent)
     Then("nodes (.*) and (.*) are not adjacent", ThenNodesAreNotAdjacent)
