@@ -1,4 +1,5 @@
 package graph
+
 // In computer science, a graph is an abstract data type that is meant to 
 // implement the graph and hypergraph concepts from mathematics.
 type Interface interface {
@@ -94,12 +95,13 @@ type adjacencyGraph struct {
 // ## Algorithms
 //
 // ### Dijkstra
-func Dijkstra(g Interface, source Node) {
+func Dijkstra(g Interface, source Node, target Node) (path []Node) {
     // Assign to every node a tentative distance value: set it to zero for our 
     // initial node and to infinity for all other nodes.
     dist := map[Node]int { source: 0 }
     // Mark all nodes unvisited.
-    visited := map[Node]Node{}
+    visited := map[Node]Node {}
+    previous := map[Node]Node { source: source }
     // Set the initial node as current.
     for current := source; current != nil; {
         // For the current node, consider all of its unvisited neighbors and 
@@ -110,23 +112,31 @@ func Dijkstra(g Interface, source Node) {
             newdistance := distance + 1
             // If this distance is less than the previously recorded tentative 
             // distance of B, then overwrite that distance.
-            if olddistance, ok := dist[node];!ok || newdistance < olddistance {
+            if olddistance, ok := dist[node]; 
+                        !ok || newdistance < olddistance {
                 dist[node] = newdistance
+                previous[node] = current
             }
         }
         // When we are done considering all of the neighbors of the current 
         // node, mark the current node as visited.
         visited[current] = current
         current = nil
-
         // Select the unvisited node that is marked with the smallest 
         // tentative distance, and set it as the current node.
         smallest := int(^uint(0) >> 1) 
         for node, distance := range dist {
-            if _, ok := visited[node]; !ok && smallest < distance {
+            if _, ok := visited[node]; !ok && distance < smallest {
                 smallest = distance
                 current = node
             }
         }
     }
+    // Get and return the optimal path
+    path = []Node {}
+    for u := target; u != source; u = previous[u] {
+        path = append([]Node { u }, path...)
+    }
+    path = append([]Node { source }, path...)
+    return
 }

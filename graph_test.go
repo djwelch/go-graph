@@ -2,11 +2,13 @@ package graph
 
 import (
     . "github.com/djwelch/go-gherkin"
-    . "github.com/tychofreeman/go-matchers"
+    . "github.com/djwelch/go-matchers"
+    "strings"
     "testing"
 )
 
 var g Interface
+var gpath []interface{}
 
 func GivenAGraph(w *World) {
     g = New()
@@ -41,6 +43,23 @@ func ThenNodeIsNotANeighbor(w *World, n0 string, n1 string) {
     AssertThat(w, ok, IsFalse)
 }
 
+func WhenIRunDijkstra(w *World, n0 string, n1 string) {
+    path := Dijkstra(g, n0, n1)
+    gpath = make([]interface{}, len(path))
+    for i, v := range path {
+        gpath[i] = interface{}(v)
+    }
+}
+
+func ThenThePathIs(w *World, p string) {
+    splits := strings.Split(p, ",")
+    generic := make([]interface{}, len(splits))
+    for i, v := range splits {
+        generic[i] = interface{}(v)
+    }
+    AssertThat(w, gpath, HasExactly(generic...))
+}
+
 func Test(t *testing.T) {
     Given("a graph", GivenAGraph)
     Given("an edge from node (.*) to (.*)", GivenAnEdge)
@@ -49,7 +68,10 @@ func Test(t *testing.T) {
     Then("nodes (.*) and (.*) are not adjacent", ThenNodesAreNotAdjacent)
     Then("node (.*) has neighbor node (.*)", ThenNodeIsANeighbor)
     Then("node (.*) does not have neighbor node (.*)", ThenNodeIsNotANeighbor)
+    When("I run the dijkstra algorithm from node (.*) to node (.*)",
+        WhenIRunDijkstra)
+    Then("the path is (.*)", ThenThePathIs)
     TearDown(func() { g = nil })
-    Run()
+    Run(t)
 }
 
