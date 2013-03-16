@@ -1,9 +1,7 @@
 package graph
 
-import (
-    "fmt"
-)
-// In computer science, a graph is an abstract data type that is meant to 
+/******************************************************************************/
+// In computer science, a graph is an abstract data type that is meant to
 // implement the graph and hypergraph concepts from mathematics.
 type Interface interface {
     Adjacent(Node, Node) (bool)
@@ -13,15 +11,15 @@ type Interface interface {
     Neighbors(Node) (map[Node]Edge)
 }
 
-// A graph data structure consists of a finite (and possibly mutable) set of 
-// ordered pairs, called edges or arcs, of certain entities called nodes or 
-// vertices. As in mathematics, an edge (x,y) is said to point or go from x to 
-// y. The nodes may be part of the graph structure, or may be external entities 
+// A graph data structure consists of a finite (and possibly mutable) set of
+// ordered pairs, called edges or arcs, of certain entities called nodes or
+// vertices. As in mathematics, an edge (x,y) is said to point or go from x to
+// y. The nodes may be part of the graph structure, or may be external entities
 // represented by integer indices or references.
 type Node interface {
 }
 
-// A graph data structure may also associate to each edge some edge value, such 
+// A graph data structure may also associate to each edge some edge value, such
 // as a symbolic label or a numeric attribute (cost, capacity, length, etc.).
 type Edge interface {
 }
@@ -91,55 +89,56 @@ type adjacencyGraph struct {
     storage map[Node]map[Node]Edge
 }
 
-// ### Incidence list 
+// ### Incidence list
 // Vertices and edges are stored as records or objects. Each vertex stores its
 // incident edges, and each edge stores its incident vertices. This data
 // structure allows the storage of additional data on vertices and edges.
 
-// ### Adjacency matrix 
+// ### Adjacency matrix
 // A two-dimensional matrix, in which the rows represent source vertices and
 // columns represent destination vertices. Data on edges and vertices must be
-// stored externally. Only the cost for one edge can be stored between each 
+// stored externally. Only the cost for one edge can be stored between each
 // pair of vertices.
 
-// ### Incidence matrix 
-// A two-dimensional Boolean matrix, in which the rows represent the vertices 
-// and columns represent the edges. The entries indicate whether the vertex at 
+// ### Incidence matrix
+// A two-dimensional Boolean matrix, in which the rows represent the vertices
+// and columns represent the edges. The entries indicate whether the vertex at
 // a row is incident to the edge at a column.
 
 // ## Algorithms
 //
 // ### Dijkstra
 func Dijkstra(g Interface, source Node, target Node) (path []Node) {
-    // Assign to every node a tentative distance value: set it to zero for our 
+    // Assign to every node a tentative distance value: set it to zero for our
     // initial node and to infinity for all other nodes.
     dist := map[Node]int { source: 0 }
     // Mark all nodes unvisited.
-    visited := map[Node]Node {}
+    visited := map[Node]Node { }
     previous := map[Node]Node { source: source }
     // Set the initial node as current.
-    for current := source; current != nil; {
-        // For the current node, consider all of its unvisited neighbors and 
+    current := source
+    for ; current != nil && current != target; {
+        // For the current node, consider all of its unvisited neighbors and
         // calculate their tentative distances.
         distance := dist[current]
         for node, edge := range g.Neighbors(current) {
             // All edges have to implement the EdgeDistance interface
             newdistance := distance + edge.(EdgeDistance).Distance()
-            // If this distance is less than the previously recorded tentative 
+            // If this distance is less than the previously recorded tentative
             // distance of B, then overwrite that distance.
-            if olddistance, ok := dist[node]; 
+            if olddistance, ok := dist[node];
                         !ok || newdistance < olddistance {
                 dist[node] = newdistance
                 previous[node] = current
             }
         }
-        // When we are done considering all of the neighbors of the current 
+        // When we are done considering all of the neighbors of the current
         // node, mark the current node as visited.
         visited[current] = current
         current = nil
-        // Select the unvisited node that is marked with the smallest 
+        // Select the unvisited node that is marked with the smallest
         // tentative distance, and set it as the current node.
-        smallest := int(^uint(0) >> 1) 
+        smallest := int(^uint(0) >> 1)
         for node, distance := range dist {
             if _, ok := visited[node]; !ok && distance < smallest {
                 smallest = distance
@@ -147,12 +146,14 @@ func Dijkstra(g Interface, source Node, target Node) (path []Node) {
             }
         }
     }
-    fmt.Println(dist)
     // Get and return the optimal path
     path = []Node {}
-    for u := target; u != source; u = previous[u] {
-        path = append([]Node { u }, path...)
+    if (current == target) {
+        for u := target; u != nil && u != source; u = previous[u] {
+            path = append([]Node { u }, path...)
+        }
+        path = append([]Node { source }, path...)
     }
-    path = append([]Node { source }, path...)
     return
 }
+

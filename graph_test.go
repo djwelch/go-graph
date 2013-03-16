@@ -63,27 +63,45 @@ func WhenIRunDijkstra(w *World, n0 string, n1 string) {
     }
 }
 
+func WhenIRunDijkstraFails(w *World, n0 string, n1 string) {
+    panicked := false
+    func() {
+        defer func() {
+            if r := recover(); r != nil {
+                panicked = true
+            }
+        }()
+        Dijkstra(g, n0, n1)
+    }()
+    AssertThat(w, panicked, IsTrue)
+}
+
 func ThenThePathIs(w *World, p string) {
-    splits := strings.Split(p, ",")
-    generic := make([]interface{}, len(splits))
-    for i, v := range splits {
-        generic[i] = interface{}(v)
+    generic := []interface{} { }
+    if p != "empty" {
+        splits := strings.Split(p, ",")
+        generic = make([]interface{}, len(splits))
+        for i, v := range splits {
+            generic[i] = interface{}(v)
+        }
     }
     AssertThat(w, gpath, HasExactly(generic...))
 }
 
 func Test(t *testing.T) {
     Given("a graph", GivenAGraph)
-    Given("an edge from node (.*) to ([^ ]*)$", GivenAnEdge)
-    Given("an edge from node (.*) to (.*) with distance (.*)", 
+    Given("an edge from node ([^ ]*) to ([^ ]*)$", GivenAnEdge)
+    Given("an edge from node ([^ ]*) to ([^ ]*) with distance ([^ ]*)", 
         GivenAnEdgeDist)
-    When("delete the edge from node (.*) to (.*)", WhenDeleteAnEdge)
-    Then("nodes (.*) and (.*) are adjacent", ThenNodesAreAdjacent)
-    Then("nodes (.*) and (.*) are not adjacent", ThenNodesAreNotAdjacent)
-    Then("node (.*) has neighbor node (.*)", ThenNodeIsANeighbor)
-    Then("node (.*) does not have neighbor node (.*)", ThenNodeIsNotANeighbor)
-    When("I run the dijkstra algorithm from node (.*) to node (.*)",
+    When("delete the edge from node ([^ ]*) to ([^ ]*)", WhenDeleteAnEdge)
+    Then("nodes ([^ ]*) and ([^ ]*) are adjacent", ThenNodesAreAdjacent)
+    Then("nodes ([^ ]*) and ([^ ]*) are not adjacent", ThenNodesAreNotAdjacent)
+    Then("node ([^ ]*) has neighbor node (.*)", ThenNodeIsANeighbor)
+    Then("node ([^ ]*) does not have neighbor node ([^ ]*)", ThenNodeIsNotANeighbor)
+    When("I run the dijkstra algorithm from node ([^ ]*) to node ([^ ]*)$",
         WhenIRunDijkstra)
+    When("I run the dijkstra algorithm from node ([^ ]*) to node ([^ ]*) it fails",
+        WhenIRunDijkstraFails)
     Then("the path is (.*)", ThenThePathIs)
     TearDown(func() { g = nil })
     Run(t)
